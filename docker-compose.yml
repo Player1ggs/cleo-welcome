@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  bot:
+    build: .
+    container_name: discord-welcome-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./src/assets:/app/src/assets
+    environment:
+      - NODE_ENV=production
+    networks:
+      - bot-network
+
+networks:
+  bot-network:
+    driver: bridge
