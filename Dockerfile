@@ -18,8 +18,9 @@ RUN npm install --only=production
 
 COPY . .
 
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S botuser -u 1001
+# Create non-root user (Debian syntax)
+RUN groupadd -g 1001 nodejs && \
+    useradd -u 1001 -g nodejs -s /bin/sh -m botuser
 USER botuser
 
 EXPOSE 3000
