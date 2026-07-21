@@ -62,11 +62,11 @@ async function generateWelcomeCard(member, guild) {
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;
 
-  // Info items
+  // Info items - now just labels, channel mentions go in message text
   const infoItems = [
-    { icon: '📖', label: 'Must Read', channel: '#📜〢ʀᴜʟᴇꜱ-ᴛᴏꜱ', color: '#f5d78e' },
-    { icon: '📢', label: 'Daily Updates', channel: '#📣〢ᴀɴɴᴏᴜɴᴄᴇᴍᴇɴᴛꜱ', color: '#c9a84c' },
-    { icon: '💬', label: 'Community Chat', channel: '#💬〢ɢᴇɴᴇʀᴀʟ-ᴄʜᴀᴛ', color: '#b8956a' },
+    { icon: '📖', label: 'Must Read', color: '#f5d78e' },
+    { icon: '📢', label: 'Daily Updates', color: '#c9a84c' },
+    { icon: '💬', label: 'Community Chat', color: '#b8956a' },
   ];
 
   let yPos = 130;
@@ -81,11 +81,6 @@ async function generateWelcomeCard(member, guild) {
     ctx.fillStyle = item.color;
     ctx.textAlign = 'left';
     ctx.fillText(`${item.icon} ${item.label}`, 330, yPos);
-
-    // Channel name
-    ctx.font = '22px Arial';
-    ctx.fillStyle = '#8a7a5a';
-    ctx.fillText(item.channel, 330, yPos + 32);
 
     yPos += 75;
   }
@@ -258,13 +253,25 @@ client.on('guildMemberAdd', async (member) => {
       return;
     }
 
+    // Get channel IDs from environment or use defaults
+    const rulesChannelId = process.env.RULES_CHANNEL_ID || '';
+    const announcementsChannelId = process.env.ANNOUNCEMENTS_CHANNEL_ID || '';
+    const generalChatChannelId = process.env.GENERAL_CHAT_CHANNEL_ID || '';
+
     console.log(`🎨 Generating welcome card for ${member.user.tag}...`);
 
     const welcomeImageBuffer = await generateWelcomeCard(member, member.guild);
     const attachment = new AttachmentBuilder(welcomeImageBuffer, { name: 'welcome.png' });
 
+    // Build channel mentions text
+    let channelMentions = '';
+    if (rulesChannelId) channelMentions += `📖 <#${rulesChannelId}>\\n`;
+    if (announcementsChannelId) channelMentions += `📢 <#${announcementsChannelId}>\\n`;
+    if (generalChatChannelId) channelMentions += `💬 <#${generalChatChannelId}>\\n`;
+
+    // Send welcome message with image and channel mentions
     await welcomeChannel.send({
-      content: `${member}`,
+      content: `${member}\\n\\n${channelMentions}`,
       files: [attachment],
       allowedMentions: { users: [member.id] }
     });
@@ -361,8 +368,18 @@ client.on('interactionCreate', async (interaction) => {
           const welcomeImageBuffer = await generateWelcomeCard(interaction.member, interaction.guild);
           const attachment = new AttachmentBuilder(welcomeImageBuffer, { name: 'welcome-test.png' });
 
+          // Get channel IDs for test
+          const rulesChannelId = process.env.RULES_CHANNEL_ID || '';
+          const announcementsChannelId = process.env.ANNOUNCEMENTS_CHANNEL_ID || '';
+          const generalChatChannelId = process.env.GENERAL_CHAT_CHANNEL_ID || '';
+
+          let channelMentions = '';
+          if (rulesChannelId) channelMentions += `📖 <#${rulesChannelId}>\\n`;
+          if (announcementsChannelId) channelMentions += `📢 <#${announcementsChannelId}>\\n`;
+          if (generalChatChannelId) channelMentions += `💬 <#${generalChatChannelId}>\\n`;
+
           await welcomeChannel.send({
-            content: `**TEST WELCOME** (triggered by ${interaction.user})`,
+            content: `**TEST WELCOME** (triggered by ${interaction.user})\\n\\n${channelMentions}`,
             files: [attachment]
           });
           await interaction.editReply('✅ Test welcome card sent!');
