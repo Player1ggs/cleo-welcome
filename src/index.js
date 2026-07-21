@@ -38,40 +38,109 @@ server.listen(process.env.PORT || 3000, () => {
 
 // ========== WELCOME CARD GENERATOR ==========
 async function generateWelcomeCard(member, guild) {
-  const canvas = createCanvas(1200, 600);
+  const canvas = createCanvas(1200, 850);
   const ctx = canvas.getContext('2d');
 
+  // ========== TOP INFO SECTION (350px height) ==========
+  // Dark background for info section
+  ctx.fillStyle = '#0d0700';
+  ctx.fillRect(0, 0, 1200, 350);
+
+  // Top gold accent line
+  ctx.fillStyle = '#d4a017';
+  ctx.fillRect(0, 0, 1200, 4);
+
+  // "PLEASE READ BELOW" text
+  ctx.font = 'bold 42px Arial';
+  ctx.fillStyle = '#f5d78e';
+  ctx.textAlign = 'center';
+  ctx.shadowColor = 'rgba(212, 160, 23, 0.5)';
+  ctx.shadowBlur = 15;
+  ctx.fillText('PLEASE READ BELOW ⚠️', 600, 70);
+
+  // Reset shadow
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+
+  // Info items
+  const infoItems = [
+    { icon: '📖', label: 'Must Read', channel: '#📜〢ʀᴜʟᴇꜱ-ᴛᴏꜱ', color: '#f5d78e' },
+    { icon: '📢', label: 'Daily Updates', channel: '#📣〢ᴀɴɴᴏᴜɴᴄᴇᴍᴇɴᴛꜱ', color: '#c9a84c' },
+    { icon: '💬', label: 'Community Chat', channel: '#💬〢ɢᴇɴᴇʀᴀʟ-ᴄʜᴀᴛ', color: '#b8956a' },
+  ];
+
+  let yPos = 130;
+  for (const item of infoItems) {
+    // Arrow
+    ctx.font = '28px Arial';
+    ctx.fillStyle = '#d4a017';
+    ctx.fillText('➡️', 280, yPos);
+
+    // Label
+    ctx.font = 'bold 26px Arial';
+    ctx.fillStyle = item.color;
+    ctx.textAlign = 'left';
+    ctx.fillText(`${item.icon} ${item.label}`, 330, yPos);
+
+    // Channel name
+    ctx.font = '22px Arial';
+    ctx.fillStyle = '#8a7a5a';
+    ctx.fillText(item.channel, 330, yPos + 32);
+
+    yPos += 75;
+  }
+
+  // Divider line between sections
+  ctx.fillStyle = '#d4a017';
+  ctx.fillRect(0, 348, 1200, 4);
+
+  // ========== WELCOME SECTION (500px height, starting at y=350) ==========
   // Load background image
   let bgImage;
   try {
     bgImage = await loadImage(path.join(__dirname, 'assets', 'welcome-bg.png'));
   } catch (e) {
-    // Fallback: create gradient background
-    const gradient = ctx.createLinearGradient(0, 0, 1200, 600);
-    gradient.addColorStop(0, '#1a1a2e');
-    gradient.addColorStop(0.5, '#16213e');
-    gradient.addColorStop(1, '#0f3460');
+    // Fallback: warm dark gradient
+    const gradient = ctx.createLinearGradient(0, 350, 1200, 850);
+    gradient.addColorStop(0, '#1a0f00');
+    gradient.addColorStop(0.3, '#2d1a00');
+    gradient.addColorStop(0.6, '#1c1000');
+    gradient.addColorStop(1, '#0d0700');
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 1200, 600);
+    ctx.fillRect(0, 350, 1200, 500);
   }
 
   if (bgImage) {
-    ctx.drawImage(bgImage, 0, 0, 1200, 600);
+    ctx.drawImage(bgImage, 0, 350, 1200, 500);
   }
 
-  // Add dark overlay for better text readability
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-  ctx.fillRect(0, 0, 1200, 600);
+  // Subtle warm overlay
+  ctx.fillStyle = 'rgba(60, 30, 0, 0.15)';
+  ctx.fillRect(0, 350, 1200, 500);
 
-  // Draw avatar circle
+  // Draw avatar circle with gold glow
   const avatarSize = 180;
   const avatarX = 600;
-  const avatarY = 200;
+  const avatarY = 520;
 
-  // Avatar circle background (white border)
+  // Outer glow ring
   ctx.beginPath();
-  ctx.arc(avatarX, avatarY, avatarSize / 2 + 8, 0, Math.PI * 2);
-  ctx.fillStyle = '#ffffff';
+  ctx.arc(avatarX, avatarY, avatarSize / 2 + 15, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(212, 160, 23, 0.3)';
+  ctx.fill();
+  ctx.closePath();
+
+  // Gold border ring
+  ctx.beginPath();
+  ctx.arc(avatarX, avatarY, avatarSize / 2 + 6, 0, Math.PI * 2);
+  ctx.fillStyle = '#d4a017';
+  ctx.fill();
+  ctx.closePath();
+
+  // Inner dark ring
+  ctx.beginPath();
+  ctx.arc(avatarX, avatarY, avatarSize / 2 + 2, 0, Math.PI * 2);
+  ctx.fillStyle = '#1a0f00';
   ctx.fill();
   ctx.closePath();
 
@@ -88,47 +157,64 @@ async function generateWelcomeCard(member, guild) {
     ctx.drawImage(avatarImage, avatarX - avatarSize / 2, avatarY - avatarSize / 2, avatarSize, avatarSize);
     ctx.restore();
   } catch (e) {
-    // Fallback if avatar fails to load
     ctx.beginPath();
     ctx.arc(avatarX, avatarY, avatarSize / 2, 0, Math.PI * 2);
-    ctx.fillStyle = '#5865F2';
+    ctx.fillStyle = '#3d2200';
     ctx.fill();
     ctx.closePath();
+
+    ctx.fillStyle = '#d4a017';
+    ctx.font = 'bold 80px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(member.user.username.charAt(0).toUpperCase(), avatarX, avatarY);
   }
 
-  // Draw "WELCOME" text
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 80px Arial';
+  // ========== TEXT SECTION ==========
   ctx.textAlign = 'center';
+
+  // "WELCOME" text
+  ctx.font = 'bold 72px Arial';
+  ctx.fillStyle = '#f5d78e';
+  ctx.shadowColor = 'rgba(212, 160, 23, 0.6)';
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
+  ctx.fillText('WELCOME', 600, 690);
+
+  // Username
+  ctx.font = 'bold 44px Arial';
+  ctx.fillStyle = '#ffe4b5';
   ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-  ctx.shadowBlur = 10;
-  ctx.shadowOffsetX = 4;
-  ctx.shadowOffsetY = 4;
-  ctx.fillText('WELCOME', 600, 380);
-
-  // Draw username
-  ctx.font = 'bold 50px Arial';
-  ctx.fillStyle = '#f0f0f0';
-  const username = member.user.username.length > 20
-    ? member.user.username.substring(0, 20) + '...'
+  ctx.shadowBlur = 8;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+  const username = member.user.username.length > 22
+    ? member.user.username.substring(0, 22) + '...'
     : member.user.username;
-  ctx.fillText(username.toUpperCase(), 600, 450);
+  ctx.fillText(username.toUpperCase(), 600, 750);
 
-  // Draw member count
-  ctx.font = '30px Arial';
-  ctx.fillStyle = '#cccccc';
-  ctx.fillText(`Member #${guild.memberCount}`, 600, 500);
+  // Member count
+  ctx.font = '28px Arial';
+  ctx.fillStyle = '#c9a84c';
+  ctx.shadowBlur = 4;
+  ctx.fillText(`MEMBER #${guild.memberCount}`, 600, 795);
 
-  // Draw subtitle
-  ctx.font = '25px Arial';
-  ctx.fillStyle = '#aaaaaa';
-  ctx.fillText("LET'S START YOUR JOURNEY!", 600, 540);
+  // Subtitle
+  ctx.font = '22px Arial';
+  ctx.fillStyle = '#b8956a';
+  ctx.shadowBlur = 2;
+  ctx.fillText("LET'S START YOUR JOURNEY!", 600, 835);
 
   // Reset shadow
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
+
+  // Bottom gold accent line
+  ctx.fillStyle = '#d4a017';
+  ctx.fillRect(0, 846, 1200, 4);
 
   return canvas.toBuffer('image/png');
 }
@@ -174,11 +260,9 @@ client.on('guildMemberAdd', async (member) => {
 
     console.log(`🎨 Generating welcome card for ${member.user.tag}...`);
 
-    // Generate the welcome image
     const welcomeImageBuffer = await generateWelcomeCard(member, member.guild);
     const attachment = new AttachmentBuilder(welcomeImageBuffer, { name: 'welcome.png' });
 
-    // Send welcome message with image
     await welcomeChannel.send({
       content: `${member}`,
       files: [attachment],
@@ -187,9 +271,8 @@ client.on('guildMemberAdd', async (member) => {
 
     console.log(`👋 Welcomed ${member.user.tag} to ${member.guild.name}`);
 
-    // Auto-assign role
     const autoRoleId = process.env.AUTO_ROLE_ID;
-    if (autoRoleId && autoRoleId !== 'value') {
+    if (autoRoleId && autoRoleId !== 'value' && autoRoleId.trim() !== '') {
       const autoRole = member.guild.roles.cache.get(autoRoleId);
       if (autoRole && autoRole.position < member.guild.members.me.roles.highest.position) {
         await member.roles.add(autoRole);
@@ -197,7 +280,6 @@ client.on('guildMemberAdd', async (member) => {
       }
     }
 
-    // DM welcome
     if (process.env.SEND_DM_WELCOME === 'true') {
       try {
         await member.send({
@@ -244,9 +326,8 @@ client.on('interactionCreate', async (interaction) => {
     await interaction.editReply({
       embeds: [{
         title: '🏓 Pong!',
-        description: `**Bot Latency:** ${latency}ms
-**API Latency:** ${apiLatency}ms`,
-        color: 0x57F287,
+        description: `**Bot Latency:** ${latency}ms\n**API Latency:** ${apiLatency}ms`,
+        color: 0xd4a017,
         timestamp: new Date()
       }]
     });
@@ -259,13 +340,13 @@ client.on('interactionCreate', async (interaction) => {
       await interaction.reply({
         embeds: [{
           title: '⚙️ Welcome Bot Configuration',
+          color: 0xd4a017,
           fields: [
             { name: 'Welcome Channel', value: `<#${process.env.WELCOME_CHANNEL_ID || 'Not set'}>`, inline: true },
             { name: 'Goodbye Channel', value: `<#${process.env.GOODBYE_CHANNEL_ID || 'Not set'}>`, inline: true },
             { name: 'Auto Role', value: `<@&${process.env.AUTO_ROLE_ID || 'Not set'}>`, inline: true },
             { name: 'DM Welcome', value: process.env.SEND_DM_WELCOME === 'true' ? '✅ Enabled' : '❌ Disabled', inline: true },
           ],
-          color: 0x5865F2,
           timestamp: new Date()
         }],
         ephemeral: true
