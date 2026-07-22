@@ -36,7 +36,7 @@ server.listen(process.env.PORT || 3000, () => {
   console.log(`🌐 Health check server running on port ${process.env.PORT || 3000}`);
 });
 
-// ========== WELCOME CARD GENERATOR (IMAGE ONLY) ==========
+// ========== WELCOME CARD GENERATOR ==========
 async function generateWelcomeCard(member, guild) {
   const canvas = createCanvas(1200, 500);
   const ctx = canvas.getContext('2d');
@@ -46,7 +46,6 @@ async function generateWelcomeCard(member, guild) {
   try {
     bgImage = await loadImage(path.join(__dirname, 'assets', 'welcome-bg.png'));
   } catch (e) {
-    // Fallback: warm dark gradient
     const gradient = ctx.createLinearGradient(0, 0, 1200, 500);
     gradient.addColorStop(0, '#1a0f00');
     gradient.addColorStop(0.3, '#2d1a00');
@@ -60,41 +59,35 @@ async function generateWelcomeCard(member, guild) {
     ctx.drawImage(bgImage, 0, 0, 1200, 500);
   }
 
-  // Subtle warm overlay
   ctx.fillStyle = 'rgba(60, 30, 0, 0.15)';
   ctx.fillRect(0, 0, 1200, 500);
 
-  // Top gold accent line
   ctx.fillStyle = '#d4a017';
   ctx.fillRect(0, 0, 1200, 4);
 
-  // Draw avatar circle with gold glow
+  // Avatar
   const avatarSize = 180;
   const avatarX = 600;
   const avatarY = 180;
 
-  // Outer glow ring
   ctx.beginPath();
   ctx.arc(avatarX, avatarY, avatarSize / 2 + 15, 0, Math.PI * 2);
   ctx.fillStyle = 'rgba(212, 160, 23, 0.3)';
   ctx.fill();
   ctx.closePath();
 
-  // Gold border ring
   ctx.beginPath();
   ctx.arc(avatarX, avatarY, avatarSize / 2 + 6, 0, Math.PI * 2);
   ctx.fillStyle = '#d4a017';
   ctx.fill();
   ctx.closePath();
 
-  // Inner dark ring
   ctx.beginPath();
   ctx.arc(avatarX, avatarY, avatarSize / 2 + 2, 0, Math.PI * 2);
   ctx.fillStyle = '#1a0f00';
   ctx.fill();
   ctx.closePath();
 
-  // Load and draw avatar
   try {
     const avatarURL = member.user.displayAvatarURL({ extension: 'png', size: 256 });
     const avatarImage = await loadImage(avatarURL);
@@ -120,19 +113,15 @@ async function generateWelcomeCard(member, guild) {
     ctx.fillText(member.user.username.charAt(0).toUpperCase(), avatarX, avatarY);
   }
 
-  // ========== TEXT SECTION ==========
+  // Text
   ctx.textAlign = 'center';
 
-  // "WELCOME" text
   ctx.font = 'bold 72px Arial';
   ctx.fillStyle = '#f5d78e';
   ctx.shadowColor = 'rgba(212, 160, 23, 0.6)';
   ctx.shadowBlur = 20;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 0;
   ctx.fillText('WELCOME', 600, 350);
 
-  // Username
   ctx.font = 'bold 44px Arial';
   ctx.fillStyle = '#ffe4b5';
   ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
@@ -144,25 +133,21 @@ async function generateWelcomeCard(member, guild) {
     : member.user.username;
   ctx.fillText(username.toUpperCase(), 600, 410);
 
-  // Member count
   ctx.font = '28px Arial';
   ctx.fillStyle = '#c9a84c';
   ctx.shadowBlur = 4;
   ctx.fillText(`MEMBER #${guild.memberCount}`, 600, 455);
 
-  // Subtitle
   ctx.font = '22px Arial';
   ctx.fillStyle = '#b8956a';
   ctx.shadowBlur = 2;
   ctx.fillText("LET'S START YOUR JOURNEY!", 600, 495);
 
-  // Reset shadow
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
 
-  // Bottom gold accent line
   ctx.fillStyle = '#d4a017';
   ctx.fillRect(0, 496, 1200, 4);
 
@@ -208,18 +193,16 @@ client.on('guildMemberAdd', async (member) => {
       return;
     }
 
-    // Get channel IDs from environment
     const rulesChannelId = process.env.RULES_CHANNEL_ID || '';
     const announcementsChannelId = process.env.ANNOUNCEMENTS_CHANNEL_ID || '';
     const generalChatChannelId = process.env.GENERAL_CHAT_CHANNEL_ID || '';
 
     console.log(`🎨 Generating welcome card for ${member.user.tag}...`);
 
-    // Generate the welcome image
     const welcomeImageBuffer = await generateWelcomeCard(member, member.guild);
     const attachment = new AttachmentBuilder(welcomeImageBuffer, { name: 'welcome.png' });
 
-    // Build embed with channel mentions (TEXT ON TOP)
+    // Build embed with image attached
     const embed = new EmbedBuilder()
       .setColor(0xd4a017)
       .setTitle('PLEASE READ BELOW ⚠️')
@@ -230,23 +213,19 @@ client.on('guildMemberAdd', async (member) => {
         `${announcementsChannelId ? `<#${announcementsChannelId}>` : '#announcements'}\n\n` +
         `➡️ 💬 **Community Chat**\n` +
         `${generalChatChannelId ? `<#${generalChatChannelId}>` : '#general-chat'}`
-      );
+      )
+      .setImage('attachment://welcome.png');
 
-    // Send welcome message: embed first (top), then image (bottom)
+    // Send everything in ONE message
     await welcomeChannel.send({
       content: `${member}`,
       embeds: [embed],
+      files: [attachment],
       allowedMentions: { users: [member.id] }
-    });
-
-    // Send image separately (below the embed)
-    await welcomeChannel.send({
-      files: [attachment]
     });
 
     console.log(`👋 Welcomed ${member.user.tag} to ${member.guild.name}`);
 
-    // Auto-assign role
     const autoRoleId = process.env.AUTO_ROLE_ID;
     if (autoRoleId && autoRoleId !== 'value' && autoRoleId.trim() !== '') {
       const autoRole = member.guild.roles.cache.get(autoRoleId);
@@ -256,7 +235,6 @@ client.on('guildMemberAdd', async (member) => {
       }
     }
 
-    // DM welcome
     if (process.env.SEND_DM_WELCOME === 'true') {
       try {
         await member.send({
@@ -352,16 +330,12 @@ client.on('interactionCreate', async (interaction) => {
               `${announcementsChannelId ? `<#${announcementsChannelId}>` : '#announcements'}\n\n` +
               `➡️ 💬 **Community Chat**\n` +
               `${generalChatChannelId ? `<#${generalChatChannelId}>` : '#general-chat'}`
-            );
+            )
+            .setImage('attachment://welcome-test.png');
 
-          // Send embed first (top)
           await welcomeChannel.send({
             content: `**TEST WELCOME** (triggered by ${interaction.user})`,
-            embeds: [embed]
-          });
-
-          // Send image second (bottom)
-          await welcomeChannel.send({
+            embeds: [embed],
             files: [attachment]
           });
 
