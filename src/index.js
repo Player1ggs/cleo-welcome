@@ -62,9 +62,6 @@ async function generateWelcomeCard(member, guild) {
   ctx.fillStyle = 'rgba(60, 30, 0, 0.15)';
   ctx.fillRect(0, 0, 1200, 500);
 
-  ctx.fillStyle = '#d4a017';
-  ctx.fillRect(0, 0, 1200, 4);
-
   // Avatar
   const avatarSize = 180;
   const avatarX = 600;
@@ -148,9 +145,6 @@ async function generateWelcomeCard(member, guild) {
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
 
-  ctx.fillStyle = '#d4a017';
-  ctx.fillRect(0, 496, 1200, 4);
-
   return canvas.toBuffer('image/png');
 }
 
@@ -202,7 +196,6 @@ client.on('guildMemberAdd', async (member) => {
     const welcomeImageBuffer = await generateWelcomeCard(member, member.guild);
     const attachment = new AttachmentBuilder(welcomeImageBuffer, { name: 'welcome.png' });
 
-    // Build embed with image attached
     const embed = new EmbedBuilder()
       .setColor(0xd4a017)
       .setTitle('PLEASE READ BELOW ⚠️')
@@ -216,7 +209,6 @@ client.on('guildMemberAdd', async (member) => {
       )
       .setImage('attachment://welcome.png');
 
-    // Send everything in ONE message
     await welcomeChannel.send({
       content: `${member}`,
       embeds: [embed],
