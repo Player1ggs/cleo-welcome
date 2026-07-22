@@ -297,7 +297,7 @@ client.on('interactionCreate', async (interaction) => {
 
   if (interaction.commandName === 'ping') {
     const sent = await interaction.reply({ content: 'Pinging...', fetchReply: true, ephemeral: true });
-n    const latency = sent.createdTimestamp - interaction.createdTimestamp;
+    const latency = sent.createdTimestamp - interaction.createdTimestamp;
     const apiLatency = Math.round(client.ws.ping);
 
     await interaction.editReply({
