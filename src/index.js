@@ -219,7 +219,7 @@ client.on('guildMemberAdd', async (member) => {
     const welcomeImageBuffer = await generateWelcomeCard(member, member.guild);
     const attachment = new AttachmentBuilder(welcomeImageBuffer, { name: 'welcome.png' });
 
-    // Build embed with channel mentions
+    // Build embed with channel mentions (TEXT ON TOP)
     const embed = new EmbedBuilder()
       .setColor(0xd4a017)
       .setTitle('PLEASE READ BELOW ⚠️')
@@ -232,12 +232,16 @@ client.on('guildMemberAdd', async (member) => {
         `${generalChatChannelId ? `<#${generalChatChannelId}>` : '#general-chat'}`
       );
 
-    // Send welcome message: embed + image
+    // Send welcome message: embed first (top), then image (bottom)
     await welcomeChannel.send({
       content: `${member}`,
       embeds: [embed],
-      files: [attachment],
       allowedMentions: { users: [member.id] }
+    });
+
+    // Send image separately (below the embed)
+    await welcomeChannel.send({
+      files: [attachment]
     });
 
     console.log(`👋 Welcomed ${member.user.tag} to ${member.guild.name}`);
@@ -293,7 +297,7 @@ client.on('interactionCreate', async (interaction) => {
 
   if (interaction.commandName === 'ping') {
     const sent = await interaction.reply({ content: 'Pinging...', fetchReply: true, ephemeral: true });
-    const latency = sent.createdTimestamp - interaction.createdTimestamp;
+n    const latency = sent.createdTimestamp - interaction.createdTimestamp;
     const apiLatency = Math.round(client.ws.ping);
 
     await interaction.editReply({
@@ -350,11 +354,17 @@ client.on('interactionCreate', async (interaction) => {
               `${generalChatChannelId ? `<#${generalChatChannelId}>` : '#general-chat'}`
             );
 
+          // Send embed first (top)
           await welcomeChannel.send({
             content: `**TEST WELCOME** (triggered by ${interaction.user})`,
-            embeds: [embed],
+            embeds: [embed]
+          });
+
+          // Send image second (bottom)
+          await welcomeChannel.send({
             files: [attachment]
           });
+
           await interaction.editReply('✅ Test welcome card sent!');
         } catch (err) {
           await interaction.editReply(`❌ Error: ${err.message}`);
