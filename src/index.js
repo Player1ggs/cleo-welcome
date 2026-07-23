@@ -11,7 +11,7 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
   ],
   presence: {
-    activities: [{ name: 'for new members 👋', type: 3 }],
+    activities: [{ name: 'Baddies around me 👋', type: 3 }],
     status: 'online',
   },
 });
@@ -198,13 +198,14 @@ client.on('guildMemberAdd', async (member) => {
 
     const embed = new EmbedBuilder()
       .setColor(0xd4a017)
+      .setTitle('Cleo - Mart')
       .setTitle('PLEASE READ BELOW ⚠️')
       .setDescription(
-        `➡️ 📖 **Must Read**\n` +
+        `  **Must Read➡️**\n` +
         `${rulesChannelId ? `<#${rulesChannelId}>` : '#rules-tos'}\n\n` +
-        `➡️ 📢 **Daily Updates**\n` +
+        `  **Daily Updates➡️**\n` +
         `${announcementsChannelId ? `<#${announcementsChannelId}>` : '#announcements'}\n\n` +
-        `➡️ 💬 **Community Chat**\n` +
+        `  **Community Chat➡️**\n` +
         `${generalChatChannelId ? `<#${generalChatChannelId}>` : '#general-chat'}`
       )
       .setImage('attachment://welcome.png');
@@ -314,13 +315,14 @@ client.on('interactionCreate', async (interaction) => {
 
           const embed = new EmbedBuilder()
             .setColor(0xd4a017)
+            .setTitle('Cleo - Mart')
             .setTitle('PLEASE READ BELOW ⚠️')
             .setDescription(
-              `➡️ 📖 **Must Read**\n` +
+              `  **Must Read➡️**\n` +
               `${rulesChannelId ? `<#${rulesChannelId}>` : '#rules-tos'}\n\n` +
-              `➡️ 📢 **Daily Updates**\n` +
+              `  **Daily Updates➡️**\n` +
               `${announcementsChannelId ? `<#${announcementsChannelId}>` : '#announcements'}\n\n` +
-              `➡️ 💬 **Community Chat**\n` +
+              `  **Community Chat➡️**\n` +
               `${generalChatChannelId ? `<#${generalChatChannelId}>` : '#general-chat'}`
             )
             .setImage('attachment://welcome-test.png');
