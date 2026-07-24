@@ -11,7 +11,7 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
   ],
   presence: {
-    activities: [{ name: 'Baddies around me 👋', type: 3 }],
+    activities: [{ name: 'for new members 👋', type: 3 }],
     status: 'online',
   },
 });
@@ -38,7 +38,7 @@ server.listen(process.env.PORT || 3000, () => {
 
 // ========== WELCOME CARD GENERATOR ==========
 async function generateWelcomeCard(member, guild) {
-  const canvas = createCanvas(1200, 500);
+  const canvas = createCanvas(1200, 600);
   const ctx = canvas.getContext('2d');
 
   // Load background image
@@ -46,39 +46,36 @@ async function generateWelcomeCard(member, guild) {
   try {
     bgImage = await loadImage(path.join(__dirname, 'assets', 'welcome-bg.png'));
   } catch (e) {
-    const gradient = ctx.createLinearGradient(0, 0, 1200, 500);
+    const gradient = ctx.createLinearGradient(0, 0, 1200, 600);
     gradient.addColorStop(0, '#1a0f00');
     gradient.addColorStop(0.3, '#2d1a00');
     gradient.addColorStop(0.6, '#1c1000');
     gradient.addColorStop(1, '#0d0700');
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 1200, 500);
+    ctx.fillRect(0, 0, 1200, 600);
   }
 
   if (bgImage) {
-    ctx.drawImage(bgImage, 0, 0, 1200, 500);
+    ctx.drawImage(bgImage, 0, 0, 1200, 600);
   }
 
-  ctx.fillStyle = 'rgba(60, 30, 0, 0.15)';
-  ctx.fillRect(0, 0, 1200, 500);
+  // Dark overlay for better text readability
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+  ctx.fillRect(0, 0, 1200, 600);
 
   // Avatar
   const avatarSize = 180;
   const avatarX = 600;
-  const avatarY = 180;
+  const avatarY = 200;
 
+  // White border ring
   ctx.beginPath();
-  ctx.arc(avatarX, avatarY, avatarSize / 2 + 15, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(212, 160, 23, 0.3)';
+  ctx.arc(avatarX, avatarY, avatarSize / 2 + 8, 0, Math.PI * 2);
+  ctx.fillStyle = '#ffffff';
   ctx.fill();
   ctx.closePath();
 
-  ctx.beginPath();
-  ctx.arc(avatarX, avatarY, avatarSize / 2 + 6, 0, Math.PI * 2);
-  ctx.fillStyle = '#d4a017';
-  ctx.fill();
-  ctx.closePath();
-
+  // Inner dark ring
   ctx.beginPath();
   ctx.arc(avatarX, avatarY, avatarSize / 2 + 2, 0, Math.PI * 2);
   ctx.fillStyle = '#1a0f00';
@@ -103,47 +100,62 @@ async function generateWelcomeCard(member, guild) {
     ctx.fill();
     ctx.closePath();
 
-    ctx.fillStyle = '#d4a017';
+    ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 80px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(member.user.username.charAt(0).toUpperCase(), avatarX, avatarY);
   }
 
-  // Text
+  // ========== TEXT SECTION (ALL WHITE) ==========
   ctx.textAlign = 'center';
 
-  ctx.font = 'bold 72px Arial';
-  ctx.fillStyle = '#f5d78e';
-  ctx.shadowColor = 'rgba(212, 160, 23, 0.6)';
-  ctx.shadowBlur = 20;
-  ctx.fillText('WELCOME', 600, 350);
-
-  ctx.font = 'bold 44px Arial';
-  ctx.fillStyle = '#ffe4b5';
+  // "WELCOME" text - white
+  ctx.font = 'bold 80px Arial';
+  ctx.fillStyle = '#ffffff';
   ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-  ctx.shadowBlur = 8;
+  ctx.shadowBlur = 15;
+  ctx.shadowOffsetX = 3;
+  ctx.shadowOffsetY = 3;
+  ctx.fillText('WELCOME', 600, 370);
+
+  // Username - white
+  ctx.font = 'bold 48px Arial';
+  ctx.fillStyle = '#ffffff';
+  ctx.shadowBlur = 10;
   ctx.shadowOffsetX = 2;
   ctx.shadowOffsetY = 2;
   const username = member.user.username.length > 22
     ? member.user.username.substring(0, 22) + '...'
     : member.user.username;
-  ctx.fillText(username.toUpperCase(), 600, 410);
+  ctx.fillText(username.toUpperCase(), 600, 430);
 
+  // Member count - white/light gray
   ctx.font = '28px Arial';
-  ctx.fillStyle = '#c9a84c';
+  ctx.fillStyle = '#e0e0e0';
+  ctx.shadowBlur = 6;
+  ctx.fillText(`MEMBER #${guild.memberCount}`, 600, 475);
+
+  // Subtitle - white
+  ctx.font = '24px Arial';
+  ctx.fillStyle = '#f0f0f0';
   ctx.shadowBlur = 4;
-  ctx.fillText(`MEMBER #${guild.memberCount}`, 600, 455);
+  ctx.fillText("LET'S START YOUR JOURNEY WITH CLEO-MART!", 600, 515);
 
-  ctx.font = '22px Arial';
-  ctx.fillStyle = '#b8956a';
-  ctx.shadowBlur = 2;
-  ctx.fillText("LET'S START YOUR JOURNEY!", 600, 495);
-
+  // Reset shadow
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
+
+  // Footer - dark bar with white text
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+  ctx.fillRect(0, 560, 1200, 40);
+
+  ctx.font = '18px Arial';
+  ctx.fillStyle = '#aaaaaa';
+  ctx.textAlign = 'center';
+  ctx.fillText('Copyright © 2026 Cleo-Mart Welcome Manager', 600, 585);
 
   return canvas.toBuffer('image/png');
 }
@@ -196,19 +208,19 @@ client.on('guildMemberAdd', async (member) => {
     const welcomeImageBuffer = await generateWelcomeCard(member, member.guild);
     const attachment = new AttachmentBuilder(welcomeImageBuffer, { name: 'welcome.png' });
 
+    // Build embed with channel mentions (TEXT ON TOP)
     const embed = new EmbedBuilder()
-      .setColor(0xd4a017)
-      .setTitle('Cleo - Mart')
+      .setColor(0x000000)
       .setTitle('PLEASE READ BELOW ⚠️')
       .setDescription(
-        `  **Must Read➡️**\n` +
+        `**Must Read** ➡️\n` +
         `${rulesChannelId ? `<#${rulesChannelId}>` : '#rules-tos'}\n\n` +
-        `  **Daily Updates➡️**\n` +
+        `**Daily Updates** ➡️\n` +
         `${announcementsChannelId ? `<#${announcementsChannelId}>` : '#announcements'}\n\n` +
-        `  **Community Chat➡️**\n` +
+        `**Community Chat** ➡️\n` +
         `${generalChatChannelId ? `<#${generalChatChannelId}>` : '#general-chat'}`
       )
-      .setImage('attachment://welcome.png');
+      .setFooter({ text: 'Better Luck For Your Next journey with Cleo-Mart ⚡' });
 
     await welcomeChannel.send({
       content: `${member}`,
@@ -314,17 +326,17 @@ client.on('interactionCreate', async (interaction) => {
           const generalChatChannelId = process.env.GENERAL_CHAT_CHANNEL_ID || '';
 
           const embed = new EmbedBuilder()
-            .setColor(0xd4a017)
-            .setTitle('Cleo - Mart')
+            .setColor(0x000000)
             .setTitle('PLEASE READ BELOW ⚠️')
             .setDescription(
-              `  **Must Read➡️**\n` +
+              `**Must Read** ➡️\n` +
               `${rulesChannelId ? `<#${rulesChannelId}>` : '#rules-tos'}\n\n` +
-              `  **Daily Updates➡️**\n` +
+              `**Daily Updates** ➡️\n` +
               `${announcementsChannelId ? `<#${announcementsChannelId}>` : '#announcements'}\n\n` +
-              `  **Community Chat➡️**\n` +
+              `**Community Chat** ➡️\n` +
               `${generalChatChannelId ? `<#${generalChatChannelId}>` : '#general-chat'}`
             )
+            .setFooter({ text: 'Better Luck For Your Next journey with Cleo-Mart ⚡' })
             .setImage('attachment://welcome-test.png');
 
           await welcomeChannel.send({
