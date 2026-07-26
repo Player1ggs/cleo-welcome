@@ -38,7 +38,7 @@ server.listen(process.env.PORT || 3000, () => {
 
 // ========== WELCOME CARD GENERATOR ==========
 async function generateWelcomeCard(member, guild) {
-  const canvas = createCanvas(1200, 600);
+  const canvas = createCanvas(1200, 500);
   const ctx = canvas.getContext('2d');
 
   // Load background image
@@ -46,27 +46,27 @@ async function generateWelcomeCard(member, guild) {
   try {
     bgImage = await loadImage(path.join(__dirname, 'assets', 'welcome-bg.png'));
   } catch (e) {
-    const gradient = ctx.createLinearGradient(0, 0, 1200, 600);
+    const gradient = ctx.createLinearGradient(0, 0, 1200, 500);
     gradient.addColorStop(0, '#1a0f00');
     gradient.addColorStop(0.3, '#2d1a00');
     gradient.addColorStop(0.6, '#1c1000');
     gradient.addColorStop(1, '#0d0700');
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 1200, 600);
+    ctx.fillRect(0, 0, 1200, 500);
   }
 
   if (bgImage) {
-    ctx.drawImage(bgImage, 0, 0, 1200, 600);
+    ctx.drawImage(bgImage, 0, 0, 1200, 500);
   }
 
-  // Dark overlay for better text readability
+  // Dark overlay
   ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-  ctx.fillRect(0, 0, 1200, 600);
+  ctx.fillRect(0, 0, 1200, 500);
 
   // Avatar
   const avatarSize = 180;
   const avatarX = 600;
-  const avatarY = 200;
+  const avatarY = 180;
 
   // White border ring
   ctx.beginPath();
@@ -107,20 +107,18 @@ async function generateWelcomeCard(member, guild) {
     ctx.fillText(member.user.username.charAt(0).toUpperCase(), avatarX, avatarY);
   }
 
-  // ========== TEXT SECTION (ALL WHITE) ==========
+  // Text
   ctx.textAlign = 'center';
 
-  // "WELCOME" text - white
-  ctx.font = 'bold 80px Arial';
+  ctx.font = 'bold 72px Arial';
   ctx.fillStyle = '#ffffff';
   ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
   ctx.shadowBlur = 15;
   ctx.shadowOffsetX = 3;
   ctx.shadowOffsetY = 3;
-  ctx.fillText('WELCOME', 600, 370);
+  ctx.fillText('WELCOME', 600, 350);
 
-  // Username - white
-  ctx.font = 'bold 48px Arial';
+  ctx.font = 'bold 44px Arial';
   ctx.fillStyle = '#ffffff';
   ctx.shadowBlur = 10;
   ctx.shadowOffsetX = 2;
@@ -128,34 +126,22 @@ async function generateWelcomeCard(member, guild) {
   const username = member.user.username.length > 22
     ? member.user.username.substring(0, 22) + '...'
     : member.user.username;
-  ctx.fillText(username.toUpperCase(), 600, 430);
+  ctx.fillText(username.toUpperCase(), 600, 410);
 
-  // Member count - white/light gray
   ctx.font = '28px Arial';
   ctx.fillStyle = '#e0e0e0';
   ctx.shadowBlur = 6;
-  ctx.fillText(`MEMBER #${guild.memberCount}`, 600, 475);
+  ctx.fillText(`MEMBER #${guild.memberCount}`, 600, 455);
 
-  // Subtitle - white
-  ctx.font = '24px Arial';
+  ctx.font = '22px Arial';
   ctx.fillStyle = '#f0f0f0';
   ctx.shadowBlur = 4;
-  ctx.fillText("LET'S START YOUR JOURNEY WITH CLEO-MART!", 600, 515);
+  ctx.fillText("LET'S START YOUR JOURNEY WITH CLEO-MART!", 600, 495);
 
-  // Reset shadow
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
-
-  // Footer - dark bar with white text
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-  ctx.fillRect(0, 560, 1200, 40);
-
-  ctx.font = '18px Arial';
-  ctx.fillStyle = '#aaaaaa';
-  ctx.textAlign = 'center';
-  ctx.fillText('Copyright © 2026 Cleo-Mart Welcome Manager', 600, 585);
 
   return canvas.toBuffer('image/png');
 }
@@ -206,11 +192,18 @@ client.on('guildMemberAdd', async (member) => {
     console.log(`🎨 Generating welcome card for ${member.user.tag}...`);
 
     const welcomeImageBuffer = await generateWelcomeCard(member, member.guild);
-    const attachment = new AttachmentBuilder(welcomeImageBuffer, { name: 'welcome.png' });
+    const welcomeAttachment = new AttachmentBuilder(welcomeImageBuffer, { name: 'welcome.png' });
 
-    // Build embed with channel mentions (TEXT ON TOP)
+    // Load logo for embed author/footer
+    const logoAttachment = new AttachmentBuilder(path.join(__dirname, 'assets', 'logo.png'), { name: 'logo.png' });
+
+    // Build embed with logo in author and footer
     const embed = new EmbedBuilder()
-      .setColor(0x000000)
+      .setColor(0xd4a017)
+      .setAuthor({ 
+        name: 'Cleo-Mart',
+        iconURL: 'attachment://logo.png'
+      })
       .setTitle('PLEASE READ BELOW ⚠️')
       .setDescription(
         `**Must Read** ➡️\n` +
@@ -220,12 +213,17 @@ client.on('guildMemberAdd', async (member) => {
         `**Community Chat** ➡️\n` +
         `${generalChatChannelId ? `<#${generalChatChannelId}>` : '#general-chat'}`
       )
-      .setFooter({ text: 'Better Luck For Your Next journey with Cleo-Mart ⚡' });
+      .setImage('attachment://welcome.png')
+      .setFooter({ 
+        text: 'Copyright © 2026 Cleo-Mart Welcome Manager',
+        iconURL: 'attachment://logo.png'
+      });
 
+    // Send ONE message with embed + both files
     await welcomeChannel.send({
       content: `${member}`,
       embeds: [embed],
-      files: [attachment],
+      files: [welcomeAttachment, logoAttachment],
       allowedMentions: { users: [member.id] }
     });
 
@@ -319,14 +317,19 @@ client.on('interactionCreate', async (interaction) => {
       if (welcomeChannel) {
         try {
           const welcomeImageBuffer = await generateWelcomeCard(interaction.member, interaction.guild);
-          const attachment = new AttachmentBuilder(welcomeImageBuffer, { name: 'welcome-test.png' });
+          const welcomeAttachment = new AttachmentBuilder(welcomeImageBuffer, { name: 'welcome-test.png' });
+          const logoAttachment = new AttachmentBuilder(path.join(__dirname, 'assets', 'logo.png'), { name: 'logo.png' });
 
           const rulesChannelId = process.env.RULES_CHANNEL_ID || '';
           const announcementsChannelId = process.env.ANNOUNCEMENTS_CHANNEL_ID || '';
           const generalChatChannelId = process.env.GENERAL_CHAT_CHANNEL_ID || '';
 
           const embed = new EmbedBuilder()
-            .setColor(0x000000)
+            .setColor(0xd4a017)
+            .setAuthor({ 
+              name: 'Cleo-Mart',
+              iconURL: 'attachment://logo.png'
+            })
             .setTitle('PLEASE READ BELOW ⚠️')
             .setDescription(
               `**Must Read** ➡️\n` +
@@ -336,13 +339,16 @@ client.on('interactionCreate', async (interaction) => {
               `**Community Chat** ➡️\n` +
               `${generalChatChannelId ? `<#${generalChatChannelId}>` : '#general-chat'}`
             )
-            .setFooter({ text: 'Better Luck For Your Next journey with Cleo-Mart ⚡' })
-            .setImage('attachment://welcome-test.png');
+            .setImage('attachment://welcome-test.png')
+            .setFooter({ 
+              text: 'Copyright © 2026 Cleo-Mart Welcome Manager',
+              iconURL: 'attachment://logo.png'
+            });
 
           await welcomeChannel.send({
             content: `**TEST WELCOME** (triggered by ${interaction.user})`,
             embeds: [embed],
-            files: [attachment]
+            files: [welcomeAttachment, logoAttachment]
           });
 
           await interaction.editReply('✅ Test welcome card sent!');
