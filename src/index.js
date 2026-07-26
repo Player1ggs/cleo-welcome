@@ -193,11 +193,9 @@ client.on('guildMemberAdd', async (member) => {
 
     const welcomeImageBuffer = await generateWelcomeCard(member, member.guild);
     const welcomeAttachment = new AttachmentBuilder(welcomeImageBuffer, { name: 'welcome.png' });
-
-    // Load logo for embed author/footer
     const logoAttachment = new AttachmentBuilder(path.join(__dirname, 'assets', 'logo.png'), { name: 'logo.png' });
 
-    // Build embed with logo in author and footer
+    // Build embed with SPACING and "Better Luck" text
     const embed = new EmbedBuilder()
       .setColor(0xd4a017)
       .setAuthor({ 
@@ -206,12 +204,17 @@ client.on('guildMemberAdd', async (member) => {
       })
       .setTitle('PLEASE READ BELOW ⚠️')
       .setDescription(
+        `\n` + // Extra space at top
         `**Must Read** ➡️\n` +
-        `${rulesChannelId ? `<#${rulesChannelId}>` : '#rules-tos'}\n\n` +
+        `${rulesChannelId ? `<#${rulesChannelId}>` : '#rules-tos'}\n` +
+        `\n` + // Space between items
         `**Daily Updates** ➡️\n` +
-        `${announcementsChannelId ? `<#${announcementsChannelId}>` : '#announcements'}\n\n` +
+        `${announcementsChannelId ? `<#${announcementsChannelId}>` : '#announcements'}\n` +
+        `\n` + // Space between items
         `**Community Chat** ➡️\n` +
-        `${generalChatChannelId ? `<#${generalChatChannelId}>` : '#general-chat'}`
+        `${generalChatChannelId ? `<#${generalChatChannelId}>` : '#general-chat'}\n` +
+        `\n` + // Extra space before "Better Luck"
+        `Better Luck For Your Next journey with Cleo-Mart ⚡` // Added text
       )
       .setImage('attachment://welcome.png')
       .setFooter({ 
@@ -332,12 +335,17 @@ client.on('interactionCreate', async (interaction) => {
             })
             .setTitle('PLEASE READ BELOW ⚠️')
             .setDescription(
+              `\n` +
               `**Must Read** ➡️\n` +
-              `${rulesChannelId ? `<#${rulesChannelId}>` : '#rules-tos'}\n\n` +
+              `${rulesChannelId ? `<#${rulesChannelId}>` : '#rules-tos'}\n` +
+              `\n` +
               `**Daily Updates** ➡️\n` +
-              `${announcementsChannelId ? `<#${announcementsChannelId}>` : '#announcements'}\n\n` +
+              `${announcementsChannelId ? `<#${announcementsChannelId}>` : '#announcements'}\n` +
+              `\n` +
               `**Community Chat** ➡️\n` +
-              `${generalChatChannelId ? `<#${generalChatChannelId}>` : '#general-chat'}`
+              `${generalChatChannelId ? `<#${generalChatChannelId}>` : '#general-chat'}\n` +
+              `\n` +
+              `Better Luck For Your Next journey with Cleo-Mart ⚡`
             )
             .setImage('attachment://welcome-test.png')
             .setFooter({ 
