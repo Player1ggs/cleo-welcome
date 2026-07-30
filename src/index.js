@@ -38,7 +38,7 @@ server.listen(process.env.PORT || 3000, () => {
 
 // ========== WELCOME CARD GENERATOR ==========
 async function generateWelcomeCard(member, guild) {
-  const canvas = createCanvas(1200, 500);
+  const canvas = createCanvas(1200, 450);
   const ctx = canvas.getContext('2d');
 
   // Load background image
@@ -46,27 +46,27 @@ async function generateWelcomeCard(member, guild) {
   try {
     bgImage = await loadImage(path.join(__dirname, 'assets', 'welcome-bg.png'));
   } catch (e) {
-    const gradient = ctx.createLinearGradient(0, 0, 1200, 500);
+    const gradient = ctx.createLinearGradient(0, 0, 1200, 450);
     gradient.addColorStop(0, '#1a0f00');
     gradient.addColorStop(0.3, '#2d1a00');
     gradient.addColorStop(0.6, '#1c1000');
     gradient.addColorStop(1, '#0d0700');
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 1200, 500);
+    ctx.fillRect(0, 0, 1200, 450);
   }
 
   if (bgImage) {
-    ctx.drawImage(bgImage, 0, 0, 1200, 500);
+    ctx.drawImage(bgImage, 0, 0, 1200, 450);
   }
 
   // Dark overlay
   ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-  ctx.fillRect(0, 0, 1200, 500);
+  ctx.fillRect(0, 0, 1200, 450);
 
   // Avatar
   const avatarSize = 180;
   const avatarX = 600;
-  const avatarY = 180;
+  const avatarY = 160;
 
   // White border ring
   ctx.beginPath();
@@ -110,15 +110,17 @@ async function generateWelcomeCard(member, guild) {
   // Text
   ctx.textAlign = 'center';
 
-  ctx.font = 'bold 72px Arial';
+  // "WELCOME" text - white
+  ctx.font = 'bold 80px Arial';
   ctx.fillStyle = '#ffffff';
   ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
   ctx.shadowBlur = 15;
   ctx.shadowOffsetX = 3;
   ctx.shadowOffsetY = 3;
-  ctx.fillText('WELCOME', 600, 350);
+  ctx.fillText('WELCOME', 600, 330);
 
-  ctx.font = 'bold 44px Arial';
+  // Username - white
+  ctx.font = 'bold 48px Arial';
   ctx.fillStyle = '#ffffff';
   ctx.shadowBlur = 10;
   ctx.shadowOffsetX = 2;
@@ -126,18 +128,15 @@ async function generateWelcomeCard(member, guild) {
   const username = member.user.username.length > 22
     ? member.user.username.substring(0, 22) + '...'
     : member.user.username;
-  ctx.fillText(username.toUpperCase(), 600, 410);
+  ctx.fillText(username.toUpperCase(), 600, 390);
 
+  // Member count - white/light gray
   ctx.font = '28px Arial';
   ctx.fillStyle = '#e0e0e0';
   ctx.shadowBlur = 6;
-  ctx.fillText(`MEMBER #${guild.memberCount}`, 600, 455);
+  ctx.fillText(`MEMBER #${guild.memberCount}`, 600, 435);
 
-  ctx.font = '22px Arial';
-  ctx.fillStyle = '#f0f0f0';
-  ctx.shadowBlur = 4;
-  ctx.fillText("LET'S START YOUR JOURNEY WITH CLEO-MART!", 600, 495);
-
+  // Reset shadow
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;
   ctx.shadowOffsetX = 0;
@@ -195,7 +194,7 @@ client.on('guildMemberAdd', async (member) => {
     const welcomeAttachment = new AttachmentBuilder(welcomeImageBuffer, { name: 'welcome.png' });
     const logoAttachment = new AttachmentBuilder(path.join(__dirname, 'assets', 'logo.png'), { name: 'logo.png' });
 
-    // Build embed with SPACING and "Better Luck" text
+    // Build embed with spacing and "Better Luck" text
     const embed = new EmbedBuilder()
       .setColor(0xd4a017)
       .setAuthor({ 
@@ -204,17 +203,17 @@ client.on('guildMemberAdd', async (member) => {
       })
       .setTitle('PLEASE READ BELOW ⚠️')
       .setDescription(
-        `\n` + // Extra space at top
+        `\n` +
         `**Must Read** ➡️\n` +
         `${rulesChannelId ? `<#${rulesChannelId}>` : '#rules-tos'}\n` +
-        `\n` + // Space between items
+        `\n` +
         `**Daily Updates** ➡️\n` +
         `${announcementsChannelId ? `<#${announcementsChannelId}>` : '#announcements'}\n` +
-        `\n` + // Space between items
+        `\n` +
         `**Community Chat** ➡️\n` +
         `${generalChatChannelId ? `<#${generalChatChannelId}>` : '#general-chat'}\n` +
-        `\n` + // Extra space before "Better Luck"
-        `Better Luck For Your Next journey with Cleo-Mart ⚡` // Added text
+        `\n` +
+        `Better Luck For Your Next journey with Cleo-Mart ⚡`
       )
       .setImage('attachment://welcome.png')
       .setFooter({ 
@@ -222,9 +221,9 @@ client.on('guildMemberAdd', async (member) => {
         iconURL: 'attachment://logo.png'
       });
 
-    // Send ONE message with embed + both files
+    // Send personalized welcome message + embed with image
     await welcomeChannel.send({
-      content: `${member}`,
+      content: `Hey ${member}, Welcome! Great to have you here — let's make this awesome together!`,
       embeds: [embed],
       files: [welcomeAttachment, logoAttachment],
       allowedMentions: { users: [member.id] }
@@ -354,7 +353,7 @@ client.on('interactionCreate', async (interaction) => {
             });
 
           await welcomeChannel.send({
-            content: `**TEST WELCOME** (triggered by ${interaction.user})`,
+            content: `**TEST WELCOME** (triggered by ${interaction.user})\n\nHey ${interaction.user}, Welcome! Great to have you here — let's make this awesome together!`,
             embeds: [embed],
             files: [welcomeAttachment, logoAttachment]
           });
