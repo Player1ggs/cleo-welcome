@@ -353,7 +353,7 @@ client.on('interactionCreate', async (interaction) => {
             });
 
           await welcomeChannel.send({
-            content: `**TEST WELCOME** (triggered by ${interaction.user})\n\nHey ${interaction.user}, Welcome! Great to have you here — let's make this awesome together!`,
+            content: `**TEST WELCOME** (triggered by ${interaction.user})\n\nHey ${interaction.user}, Welcome! Great to have you here — let's make this awesome together!✨`,
             embeds: [embed],
             files: [welcomeAttachment, logoAttachment]
           });
