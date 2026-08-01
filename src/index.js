@@ -38,7 +38,7 @@ server.listen(process.env.PORT || 3000, () => {
 
 // ========== WELCOME CARD GENERATOR ==========
 async function generateWelcomeCard(member, guild) {
-  const canvas = createCanvas(1200, 450);
+  const canvas = createCanvas(1200, 520);
   const ctx = canvas.getContext('2d');
 
   // Load background image
@@ -46,27 +46,27 @@ async function generateWelcomeCard(member, guild) {
   try {
     bgImage = await loadImage(path.join(__dirname, 'assets', 'welcome-bg.png'));
   } catch (e) {
-    const gradient = ctx.createLinearGradient(0, 0, 1200, 450);
-    gradient.addColorStop(0, '#1a0f00');
-    gradient.addColorStop(0.3, '#2d1a00');
-    gradient.addColorStop(0.6, '#1c1000');
-    gradient.addColorStop(1, '#0d0700');
+    const gradient = ctx.createLinearGradient(0, 0, 1200, 520);
+    gradient.addColorStop(0, '#3d1f00');
+    gradient.addColorStop(0.3, '#5c2e00');
+    gradient.addColorStop(0.6, '#3d2200');
+    gradient.addColorStop(1, '#1a0d00');
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 1200, 450);
+    ctx.fillRect(0, 0, 1200, 520);
   }
 
   if (bgImage) {
-    ctx.drawImage(bgImage, 0, 0, 1200, 450);
+    ctx.drawImage(bgImage, 0, 0, 1200, 520);
   }
 
-  // Dark overlay
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-  ctx.fillRect(0, 0, 1200, 450);
+  // Dark overlay — lighter
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+  ctx.fillRect(0, 0, 1200, 520);
 
   // Avatar
   const avatarSize = 180;
   const avatarX = 600;
-  const avatarY = 160;
+  const avatarY = 170;
 
   // White border ring
   ctx.beginPath();
@@ -117,7 +117,7 @@ async function generateWelcomeCard(member, guild) {
   ctx.shadowBlur = 15;
   ctx.shadowOffsetX = 3;
   ctx.shadowOffsetY = 3;
-  ctx.fillText('WELCOME', 600, 330);
+  ctx.fillText('WELCOME', 600, 340);
 
   // Username - white
   ctx.font = 'bold 48px Arial';
@@ -128,13 +128,13 @@ async function generateWelcomeCard(member, guild) {
   const username = member.user.username.length > 22
     ? member.user.username.substring(0, 22) + '...'
     : member.user.username;
-  ctx.fillText(username.toUpperCase(), 600, 390);
+  ctx.fillText(username.toUpperCase(), 600, 405);
 
   // Member count - white/light gray
   ctx.font = '28px Arial';
   ctx.fillStyle = '#e0e0e0';
   ctx.shadowBlur = 6;
-  ctx.fillText(`MEMBER #${guild.memberCount}`, 600, 435);
+  ctx.fillText(`MEMBER #${guild.memberCount}`, 600, 460);
 
   // Reset shadow
   ctx.shadowColor = 'transparent';
