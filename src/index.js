@@ -223,7 +223,7 @@ client.on('guildMemberAdd', async (member) => {
 
     // Send personalized welcome message + embed with image
     await welcomeChannel.send({
-      content: `Hey ${member}, Welcome! Great to have you here — let's make this awesome together!`,
+      content: `Hey ${member}, Welcome! Great to have you here — let's make this awesome together!✨`,
       embeds: [embed],
       files: [welcomeAttachment, logoAttachment],
       allowedMentions: { users: [member.id] }
